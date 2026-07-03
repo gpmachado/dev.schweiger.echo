@@ -10,7 +10,9 @@
     "password": "Amazon password",
     "otp": "Authenticator code (OTP)",
     "otpHint": "Requires authenticator-app 2-step verification. SMS or email codes will not work.",
-    "connecting": "Connecting to Amazon…"
+    "connecting": "Connecting to Amazon…",
+    "debugLogging": "Enable diagnostic logging",
+    "debugLoggingHint": "Turn this on only when troubleshooting. It records detailed technical logs (with secrets removed) so they appear in a diagnostic report. Reproduce the problem while it's on, send a diagnostic report, then turn it off again."
   },
   "pair": {
     "disconnected": "Not connected to Amazon. Please check your connection in the app settings."

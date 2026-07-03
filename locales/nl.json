@@ -10,7 +10,9 @@
     "password": "Amazon-wachtwoord",
     "otp": "Authenticator-code (OTP)",
     "otpHint": "Vereist tweestapsverificatie via een authenticator-app. Sms- of e-mailcodes werken niet.",
-    "connecting": "Verbinden met Amazon…"
+    "connecting": "Verbinden met Amazon…",
+    "debugLogging": "Diagnostische logging inschakelen",
+    "debugLoggingHint": "Schakel dit alleen in bij het oplossen van problemen. Het legt gedetailleerde technische logs vast (zonder gevoelige gegevens) zodat ze in een diagnoserapport verschijnen. Reproduceer het probleem terwijl dit aanstaat, stuur een diagnoserapport en schakel het daarna weer uit."
   },
   "pair": {
     "disconnected": "Niet verbonden met Amazon. Controleer uw verbinding in de app-instellingen."

@@ -20,3 +20,7 @@ async def disconnect(*, homey, query: dict, params: dict, body: dict) -> None:
 
 async def reset(*, homey, query: dict, params: dict, body: dict) -> None:
     await homey.app.reset()
+
+
+async def set_debug_logging(*, homey, query: dict, params: dict, body: dict[str, Any]) -> None:
+    await homey.app.set_debug_logging(bool(body.get("enabled")))

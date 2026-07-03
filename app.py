@@ -7,12 +7,20 @@ from homey import app
 
 from .lib.alexa import AlexaService
 from .lib.connection import categorize_error
+from .lib.diagnostics import DiagnosticLogging
 
 SYNC_INTERVAL_MS = 5 * 60 * 1000
 
 
 class App(app.App):
     async def on_init(self) -> None:
+        # Opt-in: forward the aioamazondevices library's detailed logs into the
+        # app log so they land in a user's diagnostic report. Off unless the user
+        # enabled it in app settings; survives restarts via the stored setting.
+        self._diagnostics = DiagnosticLogging(self.log)
+        if self.homey.settings.get("debug_logging"):
+            self._diagnostics.apply(True)
+
         self.alexa = AlexaService(self.log)
         self.alexa.on_state_change = self._on_state_change
         self.alexa.on_volume = self._on_volume
@@ -86,7 +94,12 @@ class App(app.App):
             "connected": self.alexa.state == "connected",
             "state": self.alexa.state,
             "error": self.alexa.last_error,
+            "debugLogging": self._diagnostics.enabled,
         }
+
+    async def set_debug_logging(self, enabled: bool) -> None:
+        await self.homey.settings.set("debug_logging", enabled)
+        self._diagnostics.apply(enabled)
 
     def reset_pairing_reconnect(self) -> None:
         self._pairing_reconnect_done = False

@@ -10,7 +10,9 @@
     "password": "Amazon-adgangskode",
     "otp": "Godkendelseskode (OTP)",
     "otpHint": "Kræver to-trins-bekræftelse med en godkendelses-app. SMS- eller e-mailkoder virker ikke.",
-    "connecting": "Forbinder til Amazon…"
+    "connecting": "Forbinder til Amazon…",
+    "debugLogging": "Aktivér diagnostisk logning",
+    "debugLoggingHint": "Slå kun dette til ved fejlfinding. Det registrerer detaljerede tekniske logfiler (uden følsomme data), så de vises i en diagnoserapport. Gengiv problemet, mens det er slået til, send en diagnoserapport, og slå det derefter fra igen."
   },
   "pair": {
     "disconnected": "Ikke forbundet til Amazon. Tjek forbindelsen i appens indstillinger."

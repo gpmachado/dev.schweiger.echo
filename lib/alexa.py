@@ -12,7 +12,6 @@ import asyncio
 import socket
 import ssl
 import time
-from http import HTTPMethod
 from typing import Any, Awaitable, Callable, Optional
 from xml.sax.saxutils import escape as escape_xml
 
@@ -21,6 +20,7 @@ import certifi
 import httpx
 from yarl import URL
 from aioamazondevices.api import AmazonEchoApi
+from aioamazondevices.exceptions import CannotAuthenticate
 from aioamazondevices.const.http import REFRESH_ACCESS_TOKEN, REFRESH_AUTH_COOKIES
 from aioamazondevices.const.sounds import SOUNDS_LIST
 from aioamazondevices.structures import AmazonDevice, AmazonMediaControls
@@ -44,6 +44,13 @@ RECOVERY_RESET_WINDOW_S = 240
 # Website/session cookies expire after ~24h; renewing them clears the whole
 # aiohttp cookie jar, so do it on a slow cadence rather than every heartbeat.
 COOKIE_REFRESH_INTERVAL_S = 6 * 60 * 60
+
+# Amazon intermittently answers the email+password POST with a captcha /
+# interstitial / rate-limit page instead of the OTP form; the library surfaces
+# that as CannotAuthenticate with this exact message. It's transient, so we retry
+# the interactive login once (see start_interactive). Genuine bad credentials
+# raise a *different* message and must not be retried.
+OTP_PAGE_MISSING = "MFA OTP code not found on login page"
 
 _PLAYBACK = {
     "play": AmazonMediaControls.Play,
@@ -110,19 +117,43 @@ class AlexaService:
     async def start_interactive(self, email: str, password: str, otp: str) -> dict:
         async with self._connect_lock:
             await self._set_state("connecting")
+            # Phase timings help explain a slow sign-in in diagnostic reports:
+            # Amazon's OAuth flow bakes in fixed waits (a 2s×3 account-id lookup)
+            # and per-request 0/2/5s back-offs when it throttles the Homey's IP.
+            t0 = time.monotonic()
             try:
-                if self._api is not None:
-                    await self._teardown()
-                self._build(email, password, None)
                 self._log("login: submitting credentials + OTP to Amazon …")
-                login_data = await self._api.login.login_mode_interactive(otp)
-                self._log("login: device registered; setting up push + fetching devices …")
+                try:
+                    login_data = await self._interactive_login_attempt(email, password, otp)
+                except CannotAuthenticate as e:
+                    if OTP_PAGE_MISSING not in str(e):
+                        raise
+                    # The OTP wasn't submitted yet (the page it belongs to never
+                    # appeared), so the same code is still valid — retry once with
+                    # a fresh session, which mints a new anti-captcha cookie.
+                    self._log(
+                        f"login: Amazon returned no OTP page after {time.monotonic() - t0:.1f}s "
+                        "(likely a captcha or interstitial) — retrying once with a fresh session …"
+                    )
+                    login_data = await self._interactive_login_attempt(email, password, otp)
+                self._log(
+                    f"login: device registered after {time.monotonic() - t0:.1f}s; "
+                    "setting up push + fetching devices …"
+                )
                 await self._after_login()
-                self._log("login: complete")
+                self._log(f"login: complete in {time.monotonic() - t0:.1f}s")
                 return login_data
             except Exception as e:
                 await self._set_state("error", f"{type(e).__name__}: {e}")
                 raise
+
+    async def _interactive_login_attempt(self, email: str, password: str, otp: str) -> dict:
+        # Each attempt starts from a clean session so a retry doesn't inherit
+        # cookies/state from the failed one.
+        if self._api is not None:
+            await self._teardown()
+        self._build(email, password, None)
+        return await self._api.login.login_mode_interactive(otp)
 
     def _build(self, email: str, password: str, login_data: Optional[dict]) -> None:
         # Fresh session — let recovery have its full budget of attempts again.
@@ -215,7 +246,7 @@ class AlexaService:
 
         Mirrors aioamazondevices' private AmazonLogin._refresh_auth_cookies (no
         public equivalent), but guards on the refresh result before clearing the
-        jar. Pinned to aioamazondevices==14.1.3 — re-check on library bumps.
+        jar. Pinned to aioamazondevices==14.1.8 — re-check on library bumps.
         """
         wrapper = self._api._http_wrapper
         ss = self._api._session_state_data
@@ -230,7 +261,9 @@ class AlexaService:
             for cookie in cookie_json[cookie_domain]:
                 new_cookie_value = cookie["Value"].replace(r'"', r"")
                 new_cookie = {cookie["Name"]: new_cookie_value}
-                await wrapper.set_cookies(new_cookie, URL(cookie_domain))
+                await wrapper.set_cookies(
+                    new_cookie, URL.build(scheme="https", host=cookie_domain)
+                )
                 website_cookies.update(new_cookie)
                 if cookie["Name"] == "session-token":
                     ss.login_stored_data["store_authentication_cookie"] = {
@@ -450,23 +483,7 @@ class AlexaService:
         await self._api.set_device_volume(self._device(serial), round(value * VOLUME_DIVISOR))
 
     async def playback(self, serial: str, action: str) -> None:
-        device = self._device(serial)
-        # WORKAROUND (aioamazondevices==14.1.3): send_media_command builds the np/command
-        # URL without a "/" separator (https://alexa.amazon.<domain>api/np/command) →
-        # CannotConnect. Already fixed on upstream main (uses URL.joinpath) but unreleased;
-        # drop this and use api.send_media_command once a release > 14.1.3 ships the fix.
-        # Issue the request ourselves with a correctly-joined URL via the lib's session.
-        ss = self._api._session_state_data
-        url = URL.joinpath(ss.alexa_website_url, "api/np/command").with_query(
-            deviceSerialNumber=device.serial_number,
-            deviceType=device.device_type,
-        )
-        await self._api._http_wrapper.session_request(
-            method=HTTPMethod.POST,
-            url=url,
-            input_data={"type": _PLAYBACK[action].value},
-            json_data=True,
-        )
+        await self._api.send_media_command(self._device(serial), _PLAYBACK[action])
 
     # --- lookups for flow autocomplete -----------------------------------
     def list_sounds(self) -> list[dict]:

@@ -10,7 +10,9 @@
     "password": "Amazon-lösenord",
     "otp": "Autentiseringskod (OTP)",
     "otpHint": "Kräver tvåstegsverifiering med en autentiseringsapp. SMS- eller e-postkoder fungerar inte.",
-    "connecting": "Ansluter till Amazon…"
+    "connecting": "Ansluter till Amazon…",
+    "debugLogging": "Aktivera diagnostisk loggning",
+    "debugLoggingHint": "Slå bara på detta vid felsökning. Det registrerar detaljerade tekniska loggar (utan känsliga uppgifter) så att de visas i en diagnostikrapport. Återskapa problemet medan det är på, skicka en diagnostikrapport och stäng sedan av det igen."
   },
   "pair": {
     "disconnected": "Inte ansluten till Amazon. Kontrollera anslutningen i appens inställningar."

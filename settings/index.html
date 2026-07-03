@@ -52,6 +52,17 @@
       <button id="disconnect" class="homey-button-danger-full" data-i18n="settings.disconnect"></button>
     </div>
 
+    <!-- Always visible: lets users turn on detailed logging before reproducing a problem. -->
+    <div id="diagnostics-container" class="homey-form-group">
+      <hr />
+      <label class="homey-form-checkbox">
+        <input class="homey-form-checkbox-input" type="checkbox" id="debug-logging" />
+        <span class="homey-form-checkbox-checkmark"></span>
+        <span class="homey-form-checkbox-text" data-i18n="settings.debugLogging"></span>
+      </label>
+      <p class="homey-form-hint" data-i18n="settings.debugLoggingHint"></p>
+    </div>
+
     <script type="text/javascript">
       const showView = (view) => {
         document.getElementById('connect-container').classList.toggle('hidden', view !== 'form');
@@ -63,10 +74,15 @@
         // Only alert an error if it followed a connect attempt the user made on this page
         // (avoids popping a stale error on load).
         let attempted = false;
+        // Don't let status polling overwrite the checkbox while a toggle is in flight.
+        let debugPending = false;
 
         const checkStatus = () => {
           Homey.api('GET', '/status', undefined, (err, res) => {
             if (err || !res) return;
+            if (!debugPending) {
+              document.getElementById('debug-logging').checked = !!res.debugLogging;
+            }
             if (res.state === 'connected') {
               attempted = false;
               showView('connected');
@@ -116,6 +132,18 @@
           Homey.api('POST', '/reset', undefined, (err) => {
             if (err) return Homey.alert(err);
             showView('form');
+          });
+        });
+
+        document.getElementById('debug-logging').addEventListener('change', (e) => {
+          const enabled = e.target.checked;
+          debugPending = true;
+          Homey.api('POST', '/debug-logging', { enabled }, (err) => {
+            debugPending = false;
+            if (err) {
+              e.target.checked = !enabled;
+              return Homey.alert(err);
+            }
           });
         });
       }

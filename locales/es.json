@@ -10,7 +10,9 @@
     "password": "Contraseña de Amazon",
     "otp": "Código del autenticador (OTP)",
     "otpHint": "Requiere verificación en dos pasos mediante una app de autenticación. Los códigos por SMS o correo electrónico no funcionan.",
-    "connecting": "Conectando con Amazon…"
+    "connecting": "Conectando con Amazon…",
+    "debugLogging": "Activar registro de diagnóstico",
+    "debugLoggingHint": "Actívalo solo para solucionar problemas. Registra registros técnicos detallados (sin datos sensibles) para que aparezcan en un informe de diagnóstico. Reproduce el problema mientras está activado, envía un informe de diagnóstico y luego vuelve a desactivarlo."
   },
   "pair": {
     "disconnected": "No conectado a Amazon. Comprueba la conexión en los ajustes de la app."

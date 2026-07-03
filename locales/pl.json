@@ -10,7 +10,9 @@
     "password": "Hasło Amazon",
     "otp": "Kod uwierzytelniający (OTP)",
     "otpHint": "Wymaga weryfikacji dwuetapowej za pomocą aplikacji uwierzytelniającej. Kody SMS lub e-mail nie działają.",
-    "connecting": "Łączenie z Amazon…"
+    "connecting": "Łączenie z Amazon…",
+    "debugLogging": "Włącz rejestrowanie diagnostyczne",
+    "debugLoggingHint": "Włącz tę opcję tylko podczas rozwiązywania problemów. Rejestruje szczegółowe dzienniki techniczne (bez danych wrażliwych), aby pojawiły się w raporcie diagnostycznym. Odtwórz problem, gdy opcja jest włączona, wyślij raport diagnostyczny, a następnie wyłącz ją ponownie."
   },
   "pair": {
     "disconnected": "Brak połączenia z Amazon. Sprawdź połączenie w ustawieniach aplikacji."

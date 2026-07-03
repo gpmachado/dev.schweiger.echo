@@ -10,7 +10,9 @@
     "password": "Mot de passe Amazon",
     "otp": "Code d'authentification (OTP)",
     "otpHint": "Nécessite la vérification en deux étapes via une application d'authentification. Les codes SMS ou e-mail ne fonctionnent pas.",
-    "connecting": "Connexion à Amazon…"
+    "connecting": "Connexion à Amazon…",
+    "debugLogging": "Activer la journalisation de diagnostic",
+    "debugLoggingHint": "À activer uniquement pour le dépannage. Cela enregistre des journaux techniques détaillés (sans les données sensibles) afin qu'ils apparaissent dans un rapport de diagnostic. Reproduisez le problème pendant que l'option est activée, envoyez un rapport de diagnostic, puis désactivez-la."
   },
   "pair": {
     "disconnected": "Non connecté à Amazon. Veuillez vérifier votre connexion dans les paramètres de l'application."

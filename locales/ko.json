@@ -10,7 +10,9 @@
     "password": "Amazon 비밀번호",
     "otp": "인증 앱 코드 (OTP)",
     "otpHint": "인증 앱을 통한 2단계 인증이 필요합니다. SMS나 이메일 코드는 작동하지 않습니다.",
-    "connecting": "Amazon에 연결 중…"
+    "connecting": "Amazon에 연결 중…",
+    "debugLogging": "진단 로깅 활성화",
+    "debugLoggingHint": "문제 해결 시에만 켜세요. 자세한 기술 로그(민감한 정보 제외)를 기록하여 진단 보고서에 표시되도록 합니다. 켜져 있는 동안 문제를 재현하고 진단 보고서를 보낸 다음 다시 끄세요."
   },
   "pair": {
     "disconnected": "Amazon에 연결되어 있지 않습니다. 앱 설정에서 연결을 확인하세요."

@@ -10,7 +10,9 @@
     "password": "Amazon-passord",
     "otp": "Autentiseringskode (OTP)",
     "otpHint": "Krever totrinnsbekreftelse med en autentiseringsapp. SMS- eller e-postkoder fungerer ikke.",
-    "connecting": "Kobler til Amazon…"
+    "connecting": "Kobler til Amazon…",
+    "debugLogging": "Aktiver diagnostisk logging",
+    "debugLoggingHint": "Slå på dette bare ved feilsøking. Det registrerer detaljerte tekniske logger (uten sensitive data) slik at de vises i en diagnoserapport. Gjenskap problemet mens det er på, send en diagnoserapport, og slå det deretter av igjen."
   },
   "pair": {
     "disconnected": "Ikke koblet til Amazon. Sjekk tilkoblingen i appinnstillingene."
