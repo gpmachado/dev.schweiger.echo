@@ -67,5 +67,8 @@
   },
   "2.0.3": {
     "en": "More reliable sign-in: if Amazon returns an unexpected page instead of the code prompt, the app now retries automatically. Added an optional 'diagnostic logging' switch in app settings — if you have trouble signing in or connecting, turn it on, reproduce the problem, then send a diagnostic report so the cause can be pinpointed. Also updated the Amazon library to the latest version, which fixes playback (play/pause/next/previous) controls."
+  },
+  "2.0.4": {
+    "en": "Major reliability update for signing in and adding devices. Fixed sign-in failing with 'Cannot find account owner customer ID' (which affected accounts that had signed in several times), and fixed 'Add device' timing out while searching — adding devices, and loading them at sign-in, is now much faster. Sign-in is also saved as soon as your account is registered so a brief Amazon hiccup no longer makes you start over, the app retries automatically if Amazon returns an unexpected page, and error messages are clearer. New: an optional 'diagnostic logging' switch in app settings to help pin down connection problems. Also updated the underlying Amazon library, which fixes playback (play/pause/next/previous) controls."
   }
 }

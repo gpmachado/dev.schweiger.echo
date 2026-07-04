@@ -11,7 +11,7 @@ A Homey app (**Python** Apps SDK v3, runs on Homey's CPython 3.14 runtime) that 
 ## Tech stack
 
 - **Language/runtime:** Python (Homey runs CPython **3.14**); `"runtime": "python"`, `"pythonVersion": "3.14"` in the manifest.
-- **Core dependency:** `aioamazondevices==14.1.8` (pulls `aiohttp`, `httpx[http2]`, `orjson`, `beautifulsoup4`, `h2`, `yarl`, …).
+- **Core dependency:** `aioamazondevices==14.1.9` (pulls `aiohttp`, `httpx[http2]`, `orjson`, `beautifulsoup4`, `h2`, `yarl`, …).
 - **Platform:** Homey Apps SDK v3. **Requires Homey firmware >= 13.0.0** (Python apps).
 - **No test framework.** Validate with `homey app run` against a real Homey + Amazon account.
 - Type-checking (optional, local): `homey-stubs` + pyright.

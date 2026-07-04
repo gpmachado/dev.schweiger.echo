@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "dev.schweiger.echo",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "compatibility": ">=13.0.0",
   "sdk": 3,
   "runtime": "python",
@@ -86,7 +86,7 @@
   },
   "homeyCommunityTopicId": 120365,
   "pythonPackages": [
-    "aioamazondevices==14.1.8"
+    "aioamazondevices==14.1.9"
   ],
   "flow": {
     "triggers": [

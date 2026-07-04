@@ -77,6 +77,16 @@
         // Don't let status polling overwrite the checkbox while a toggle is in flight.
         let debugPending = false;
 
+        // Turn a few known technical errors into a clearer, translated explanation.
+        // The raw message is still kept in the app log / diagnostic report.
+        const friendlyError = (error) => {
+          const msg = typeof error === 'string' ? error : (error && error.message) || '';
+          if (msg.indexOf('MFA OTP code not found') !== -1) {
+            return Homey.__('settings.errorOtpPage');
+          }
+          return error;
+        };
+
         const checkStatus = () => {
           Homey.api('GET', '/status', undefined, (err, res) => {
             if (err || !res) return;
@@ -92,7 +102,7 @@
               showView('form');
               if (attempted && res.error) {
                 attempted = false;
-                Homey.alert(res.error);
+                Homey.alert(friendlyError(res.error));
               }
             }
           });

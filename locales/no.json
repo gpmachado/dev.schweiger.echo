@@ -12,7 +12,8 @@
     "otpHint": "Krever totrinnsbekreftelse med en autentiseringsapp. SMS- eller e-postkoder fungerer ikke.",
     "connecting": "Kobler til Amazon…",
     "debugLogging": "Aktiver diagnostisk logging",
-    "debugLoggingHint": "Slå på dette bare ved feilsøking. Det registrerer detaljerte tekniske logger (uten sensitive data) slik at de vises i en diagnoserapport. Gjenskap problemet mens det er på, send en diagnoserapport, og slå det deretter av igjen."
+    "debugLoggingHint": "Slå på dette bare ved feilsøking. Det registrerer detaljerte tekniske logger (uten sensitive data) slik at de vises i en diagnoserapport. Gjenskap problemet mens det er på, send en diagnoserapport, og slå det deretter av igjen.",
+    "errorOtpPage": "Amazon viste ikke trinnet for å skrive inn autentiseringskoden. Det skyldes vanligvis feil e-post eller passord, eller at totrinnsbekreftelse ikke er satt opp med en autentiseringsapp (SMS- eller e-postkoder fungerer ikke) — noen ganger er det bare en midlertidig sikkerhetssjekk. Sjekk Amazon-e-posten og passordet ditt, sørg for at en autentiseringsapp er aktivert under Amazon → Pålogging og sikkerhet → Totrinnsbekreftelse, og prøv igjen med en ny kode."
   },
   "pair": {
     "disconnected": "Ikke koblet til Amazon. Sjekk tilkoblingen i appinnstillingene."

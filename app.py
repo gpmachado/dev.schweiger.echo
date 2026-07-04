@@ -71,13 +71,17 @@ class App(app.App):
 
     async def _do_login(self, email: str, password: str, otp: str) -> None:
         self.log("Connect requested — starting interactive login")
+        # Store the email up front so that if the login registers but a follow-up
+        # step (device fetch / push) hits a transient Amazon 503, both email and
+        # login_data are on disk together and auto-connect can recover — instead
+        # of losing a good session. start_interactive persists login_data as soon
+        # as the device is registered.
+        await self.homey.settings.set("email", email)
         try:
-            login_data = await self.alexa.start_interactive(email, password, otp)
+            await self.alexa.start_interactive(email, password, otp)
         except Exception as e:  # noqa: BLE001
             self.error(f"Login failed: {type(e).__name__}: {e}")
             return
-        await self.homey.settings.set("email", email)
-        await self.homey.settings.set("login_data", login_data)
         self.log("Login successful — connected")
 
     async def disconnect(self) -> None:

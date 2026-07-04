@@ -9,6 +9,7 @@ Volume scale: Homey uses 0-1, the Alexa API uses 0-100.
 """
 
 import asyncio
+import json
 import socket
 import ssl
 import time
@@ -21,7 +22,13 @@ import httpx
 from yarl import URL
 from aioamazondevices.api import AmazonEchoApi
 from aioamazondevices.exceptions import CannotAuthenticate
-from aioamazondevices.const.http import REFRESH_ACCESS_TOKEN, REFRESH_AUTH_COOKIES
+from aioamazondevices.const.http import (
+    AMAZON_DEVICE_TYPE,
+    REFRESH_ACCESS_TOKEN,
+    REFRESH_AUTH_COOKIES,
+    URI_DEVICES,
+    URI_REGISTER,
+)
 from aioamazondevices.const.sounds import SOUNDS_LIST
 from aioamazondevices.structures import AmazonDevice, AmazonMediaControls
 
@@ -140,6 +147,12 @@ class AlexaService:
                     f"login: device registered after {time.monotonic() - t0:.1f}s; "
                     "setting up push + fetching devices …"
                 )
+                # Persist the session the moment it's registered — before the
+                # device fetch / push setup, which can hit a transient Amazon 503
+                # and would otherwise throw away a perfectly good login. With it
+                # stored, auto-connect/sync finishes the job on the next cycle
+                # instead of forcing the user to sign in again.
+                await self._persist_login_data()
                 await self._after_login()
                 self._log(f"login: complete in {time.monotonic() - t0:.1f}s")
                 return login_data
@@ -246,7 +259,7 @@ class AlexaService:
 
         Mirrors aioamazondevices' private AmazonLogin._refresh_auth_cookies (no
         public equivalent), but guards on the refresh result before clearing the
-        jar. Pinned to aioamazondevices==14.1.8 — re-check on library bumps.
+        jar. Pinned to aioamazondevices==14.1.9 — re-check on library bumps.
         """
         wrapper = self._api._http_wrapper
         ss = self._api._session_state_data
@@ -342,10 +355,66 @@ class AlexaService:
     async def _save_to_file(self, raw_data, url: str = "login_data", content_type: str = "application/json") -> None:
         if isinstance(raw_data, dict) and url == "login_data" and self.on_login_data is not None:
             await self.on_login_data(raw_data)
+            return
+        # WORKAROUND (aioamazondevices==14.1.9): seed the account customer id from
+        # responses passing through here so the library's obtain_account_customer_id()
+        # can't fail. It derives the id by scanning the device list for the *just-
+        # registered* virtual device's serial, but Amazon stops returning that entry
+        # once an account has accumulated many app registrations — so login dies with
+        # "Cannot find account owner customer ID" even though registration succeeded.
+        # Both the registration response (customer_id) and the device list (the
+        # account's own "This Device", deviceType AMAZON_DEVICE_TYPE, carries the same
+        # deviceOwnerCustomerId) hold the value; grab it from whichever arrives first.
+        # Covers interactive login (register) and stored/reconnect login (device list).
+        if (
+            isinstance(raw_data, str)
+            and self._api is not None
+            and not self._api._session_state_data.account_customer_id
+        ):
+            if URI_REGISTER in url:
+                self._seed_customer_id_from_register(raw_data)
+            elif URI_DEVICES in url:
+                self._seed_customer_id_from_devices(raw_data)
+
+    def _seed_customer_id_from_register(self, body: str) -> None:
+        try:
+            customer_id = json.loads(body)["response"]["success"]["customer_id"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            return
+        if customer_id:
+            self._api._session_state_data.account_customer_id = customer_id
+            self._log("login: seeded account customer id from registration")
+
+    def _seed_customer_id_from_devices(self, body: str) -> None:
+        try:
+            devices = json.loads(body).get("devices", [])
+        except (json.JSONDecodeError, AttributeError):
+            return
+        for device in devices:
+            if (
+                device.get("deviceType") == AMAZON_DEVICE_TYPE
+                and device.get("deviceOwnerCustomerId")
+            ):
+                self._api._session_state_data.account_customer_id = device[
+                    "deviceOwnerCustomerId"
+                ]
+                self._log("login: recovered account customer id from device list")
+                return
 
     # --- data ------------------------------------------------------------
     async def refresh_devices(self) -> dict[str, AmazonDevice]:
-        self._devices = await self._api.get_devices_data()
+        """Fetch the device list (serial, name, family, capabilities, type,
+        cluster members) — deliberately the *basic* list.
+
+        get_devices_data() would also pull DND/notifications/per-device comms/
+        sensor data, but this app uses none of it — media/volume state arrives via
+        the push channel, and the library's command methods only need serial,
+        type, cluster members and the account customer id. Those extra per-device
+        calls are also slow enough on multi-device accounts to exceed Homey's 30s
+        pairing timeout (or hang on a throttled comms call), so we skip them.
+        """
+        await self._api._device_handler.get_base_devices()
+        self._devices = self._api._device_handler.devices
         return self._devices
 
     async def sync(self) -> None:
